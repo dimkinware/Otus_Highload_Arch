@@ -1,0 +1,32 @@
+version: "3.9"
+services:
+  postgres:
+    image: postgres:14.8-alpine3.18
+    environment:
+      POSTGRES_DB: "higharchdb"
+      POSTGRES_USER: "higharchpguser"
+      POSTGRES_PASSWORD: "higharchpgpwd"
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+    volumes:
+      - ./init_db:/docker-entrypoint-initdb.d
+      - higharchdb-data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+  app:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    environment:
+      POSTGRES_DB: "higharchdb"
+      POSTGRES_USER: "higharchpguser"
+      POSTGRES_PASSWORD: "higharchpgpwd"
+      POSTGRES_HOST: "postgres"
+      POSTGRES_PORT: "5432"
+      APP_PORT: "8080"
+    volumes:
+      - .:/app
+    ports:
+      - "8080:8080"
+
+volumes:
+  higharchdb-data:
