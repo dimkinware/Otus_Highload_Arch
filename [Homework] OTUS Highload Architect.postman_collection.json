@@ -299,7 +299,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"first_name\": \"Al\",\n  \"second_name\": \"Capone\",\n  \"birthdate\": \"17.01.1899\",\n  \"biography\": \"Gangster, bootlegger, racketeer\",\n  \"city\": \"Chicago\",\n  \"password\": \"12345678\"\n}",
+									"raw": "{\n  \"first_name\": \"Al\",\n  \"second_name\": \"Capone\",\n  \"birthdate\": \"1899-01-17\",\n  \"gender\": 1,\n  \"biography\": \"Gangster, bootlegger, racketeer\",\n  \"city\": \"Chicago\",\n  \"password\": \"12345678\"\n}",
 									"options": {
 										"raw": {
 											"headerFamily": "json",
@@ -537,7 +537,7 @@
 											}
 										],
 										"url": {
-											"raw": "localhost:8080/user/get/42",
+											"raw": "localhost:8080/user/get/63abbd48-ff4e-40ce-b0c7-85356828dd7f",
 											"host": [
 												"localhost"
 											],
@@ -545,7 +545,7 @@
 											"path": [
 												"user",
 												"get",
-												"42"
+												"63abbd48-ff4e-40ce-b0c7-85356828dd7f"
 											]
 										},
 										"description": "Получение анкеты пользователя"
