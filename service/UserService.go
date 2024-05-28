@@ -23,6 +23,7 @@ func (s *UserService) GetUser(id string) (*api.UserApiModel, error) {
 		return nil, ErrorNotFound
 	}
 
+	// TODO move to mapper
 	var result = api.UserApiModel{
 		UserId:     user.Id,
 		FirstName:  user.FirstName,

@@ -11,6 +11,7 @@ import (
 type UserStore interface {
 	GetUser(id string) (*entity.User, error)
 	CreateUser(user entity.User) (*string, error)
+	SearchByName(firstNameStr, lastNameStr string) ([]entity.User, error)
 }
 
 type dbUserStore struct {
@@ -25,11 +26,11 @@ func NewDbUserStore(db *sqlx.DB) UserStore {
 
 func (p dbUserStore) GetUser(id string) (*entity.User, error) {
 	rows, err := p.db.Queryx("SELECT * FROM users WHERE id = $1 limit 1", id)
-	defer rows.Close()
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
+	defer rows.Close()
 
 	if rows.Next() {
 		var user entity.User
@@ -56,6 +57,27 @@ func (p dbUserStore) CreateUser(user entity.User) (*string, error) {
 		return nil, err
 	}
 	return &userId, nil
+}
+
+func (p dbUserStore) SearchByName(firstNameStr, lastNameStr string) ([]entity.User, error) {
+	rows, err := p.db.Queryx("SELECT * FROM users WHERE first_name LIKE $1 AND second_name LIKE $2", firstNameStr+"%", lastNameStr+"%")
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	var users []entity.User
+	for rows.Next() {
+		var user entity.User
+		err = rows.StructScan(&user)
+		if err != nil {
+			log.Println(err)
+			return nil, err
+		}
+		users = append(users, user)
+	}
+	return users, nil
 }
 
 // region MockUserStore
@@ -91,6 +113,11 @@ func (m mockUserStore) GetUser(id string) (*entity.User, error) {
 func (m mockUserStore) CreateUser(user entity.User) (*string, error) {
 	var userId = "100500"
 	return &userId, nil
+}
+
+func (m mockUserStore) SearchByName(firstNameStr, lastNameStr string) ([]entity.User, error) {
+	//TODO implement me
+	panic("implement me")
 }
 
 // endregion mockUserStore

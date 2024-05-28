@@ -521,6 +521,235 @@
 					]
 				},
 				{
+					"name": "search",
+					"item": [
+						{
+							"name": "Поиск анкет",
+							"request": {
+								"method": "GET",
+								"header": [
+									{
+										"key": "Accept",
+										"value": "application/json"
+									}
+								],
+								"url": {
+									"raw": "localhost:8080/user/search?first_name=Ков&last_name=Анас",
+									"host": [
+										"localhost"
+									],
+									"port": "8080",
+									"path": [
+										"user",
+										"search"
+									],
+									"query": [
+										{
+											"key": "first_name",
+											"value": "Ков",
+											"description": "(Required) Условие поиска по имени"
+										},
+										{
+											"key": "last_name",
+											"value": "Анас",
+											"description": "(Required) Условие поиска по фамилии"
+										}
+									]
+								},
+								"description": "Поиск анкет"
+							},
+							"response": [
+								{
+									"name": "Успешные поиск пользователя",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/user/search?first_name=<string>&last_name=<string>",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"user",
+												"search"
+											],
+											"query": [
+												{
+													"key": "first_name",
+													"value": "<string>",
+													"description": "(Required) Условие поиска по имени"
+												},
+												{
+													"key": "last_name",
+													"value": "<string>",
+													"description": "(Required) Условие поиска по фамилии"
+												}
+											]
+										}
+									},
+									"status": "OK",
+									"code": 200,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										}
+									],
+									"cookie": [],
+									"body": "[\n  {\n    \"id\": \"<string>\",\n    \"first_name\": \"<string>\",\n    \"second_name\": \"<string>\",\n    \"birthdate\": \"<date>\",\n    \"biography\": \"<string>\",\n    \"city\": \"<string>\"\n  },\n  {\n    \"id\": \"<string>\",\n    \"first_name\": \"<string>\",\n    \"second_name\": \"<string>\",\n    \"birthdate\": \"<date>\",\n    \"biography\": \"<string>\",\n    \"city\": \"<string>\"\n  }\n]"
+								},
+								{
+									"name": "Невалидные данные",
+									"originalRequest": {
+										"method": "GET",
+										"header": [],
+										"url": {
+											"raw": "{{baseUrl}}/user/search?first_name=<string>&last_name=<string>",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"user",
+												"search"
+											],
+											"query": [
+												{
+													"key": "first_name",
+													"value": "<string>",
+													"description": "(Required) Условие поиска по имени"
+												},
+												{
+													"key": "last_name",
+													"value": "<string>",
+													"description": "(Required) Условие поиска по фамилии"
+												}
+											]
+										}
+									},
+									"status": "Bad Request",
+									"code": 400,
+									"_postman_previewlanguage": "text",
+									"header": [],
+									"cookie": [],
+									"body": ""
+								},
+								{
+									"name": "Ошибка сервера",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/user/search?first_name=<string>&last_name=<string>",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"user",
+												"search"
+											],
+											"query": [
+												{
+													"key": "first_name",
+													"value": "<string>",
+													"description": "(Required) Условие поиска по имени"
+												},
+												{
+													"key": "last_name",
+													"value": "<string>",
+													"description": "(Required) Условие поиска по фамилии"
+												}
+											]
+										}
+									},
+									"status": "Internal Server Error",
+									"code": 500,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										},
+										{
+											"key": "Retry-After",
+											"value": "<integer>",
+											"description": {
+												"content": "Время, через которое еще раз нужно сделать запрос",
+												"type": "text/plain"
+											}
+										}
+									],
+									"cookie": [],
+									"body": "{\n  \"message\": \"<string>\",\n  \"request_id\": \"<string>\",\n  \"code\": \"<integer>\"\n}"
+								},
+								{
+									"name": "Ошибка сервера",
+									"originalRequest": {
+										"method": "GET",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/user/search?first_name=<string>&last_name=<string>",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"user",
+												"search"
+											],
+											"query": [
+												{
+													"key": "first_name",
+													"value": "<string>",
+													"description": "(Required) Условие поиска по имени"
+												},
+												{
+													"key": "last_name",
+													"value": "<string>",
+													"description": "(Required) Условие поиска по фамилии"
+												}
+											]
+										}
+									},
+									"status": "Service Unavailable",
+									"code": 503,
+									"_postman_previewlanguage": "json",
+									"header": [
+										{
+											"key": "Content-Type",
+											"value": "application/json"
+										},
+										{
+											"key": "Retry-After",
+											"value": "<integer>",
+											"description": {
+												"content": "Время, через которое еще раз нужно сделать запрос",
+												"type": "text/plain"
+											}
+										}
+									],
+									"cookie": [],
+									"body": "{\n  \"message\": \"<string>\",\n  \"request_id\": \"<string>\",\n  \"code\": \"<integer>\"\n}"
+								}
+							]
+						}
+					]
+				},
+				{
 					"name": "get",
 					"item": [
 						{
