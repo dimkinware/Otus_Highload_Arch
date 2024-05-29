@@ -60,7 +60,7 @@ func (p dbUserStore) CreateUser(user entity.User) (*string, error) {
 }
 
 func (p dbUserStore) SearchByName(firstNameStr, lastNameStr string) ([]entity.User, error) {
-	rows, err := p.db.Queryx("SELECT * FROM users WHERE first_name LIKE $1 AND second_name LIKE $2", firstNameStr+"%", lastNameStr+"%")
+	rows, err := p.db.Queryx("SELECT * FROM users WHERE first_name LIKE $1 AND second_name LIKE $2 ORDER BY id", firstNameStr+"%", lastNameStr+"%")
 	if err != nil {
 		log.Println(err)
 		return nil, err
