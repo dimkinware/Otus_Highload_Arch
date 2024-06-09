@@ -19,7 +19,7 @@ func (s *SearchService) SearchByName(firstNameStr, secondNameStr string) ([]api.
 	if err != nil {
 		return nil, ErrorStoreError
 	}
-	if users == nil || len(users) == 0 {
+	if len(users) == 0 {
 		return nil, ErrorNotFound
 	}
 

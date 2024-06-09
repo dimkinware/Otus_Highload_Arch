@@ -4,8 +4,9 @@ import (
 	"HighArch/api"
 	"HighArch/entity"
 	"HighArch/storage"
-	"github.com/google/uuid"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 type LoginService struct {
@@ -44,6 +45,27 @@ func (s *LoginService) Login(loginData api.LoginApiModel) (*api.LoginSuccessApiM
 		}
 		return &api.LoginSuccessApiModel{Token: newTokenInfo.Token}, nil
 	}
+}
+
+func (s *LoginService) Authenticate(token string) (userId *string, err error) {
+	tokenInfo, err := s.tokenStore.FindToken(token)
+	if err != nil {
+		return nil, err
+	}
+	if tokenInfo == nil {
+		return nil, ErrorNotFound
+	}
+	if !checkTokenInfoIsValid(*tokenInfo) {
+		return nil, ErrorTokenExpired
+	}
+	return &tokenInfo.UserId, nil
+}
+
+func checkTokenInfoIsValid(tokenInfo entity.TokenInfo) bool {
+	if tokenInfo.ExpireTime <= time.Now().UnixMilli() || tokenInfo.UserId == "" {
+		return false
+	}
+	return true
 }
 
 const ThirtyDaysMs = 30*24*60*60 + 1000

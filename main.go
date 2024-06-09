@@ -2,12 +2,13 @@ package main
 
 import (
 	"fmt"
-	"github.com/gorilla/mux"
-	"github.com/jmoiron/sqlx"
-	_ "github.com/lib/pq"
 	"log"
 	"net/http"
 	"os"
+
+	"github.com/gorilla/mux"
+	"github.com/jmoiron/sqlx"
+	_ "github.com/lib/pq"
 )
 
 func main() {
@@ -30,11 +31,19 @@ func main() {
 	}
 
 	server := NewServer(db)
+
 	router := mux.NewRouter()
-	router.HandleFunc("/user/get/{id}", server.GetUserHandler).Methods("GET")
 	router.HandleFunc("/user/register", server.GetRegisterHandler).Methods("POST")
 	router.HandleFunc("/login", server.GetLoginHandler).Methods("POST")
-	router.HandleFunc("/user/search", server.GetSearchHandler).Methods("GET")
+
+	//defining authenticated route
+	privateRouter := router.PathPrefix("/").Subrouter()
+	privateRouter.Use(server.GetAuthMiddleware)
+
+	privateRouter.HandleFunc("/user/get/{id}", server.GetUserHandler).Methods("GET")
+	privateRouter.HandleFunc("/user/search", server.GetSearchHandler).Methods("GET")
+	privateRouter.HandleFunc("/friend/set/{id}", server.GetFriendSetHandler).Methods("PUT")
+	privateRouter.HandleFunc("/friend/delete/{id}", server.GetFriendDeleteHandler).Methods("PUT")
 
 	println("Start listening server on port " + appPort)
 	http.ListenAndServe("0.0.0.0:"+appPort, router)

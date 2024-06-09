@@ -2,8 +2,9 @@ package storage
 
 import (
 	"HighArch/entity"
-	"github.com/jmoiron/sqlx"
 	"log"
+
+	"github.com/jmoiron/sqlx"
 )
 
 type TokenStore interface {
@@ -32,5 +33,22 @@ func (d dbTokenStore) CreateNewToken(tokenInfo entity.TokenInfo) error {
 }
 
 func (d dbTokenStore) FindToken(token string) (*entity.TokenInfo, error) {
-	panic("implement me")
+	rows, err := d.db.Queryx("SELECT * FROM tokens WHERE token = $1 LIMIT 1 ORDER BY expired_time DESC", token)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+	defer rows.Close()
+
+	if rows.Next() {
+		var result entity.TokenInfo
+		err := rows.StructScan(&result)
+		if err != nil {
+			log.Println(err)
+			return nil, err
+		}
+		return &result, nil
+	}
+
+	return nil, nil
 }
