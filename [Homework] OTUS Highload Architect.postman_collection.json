@@ -25,7 +25,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"id\": \"<string>\",\n  \"password\": \"<string>\"\n}",
+							"raw": "{\n  \"id\": \"cc6691e2-d3b0-4271-bce1-f8387364aa0a\",\n  \"password\": \"12345678\"\n}",
 							"options": {
 								"raw": {
 									"headerFamily": "json",
@@ -34,10 +34,11 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseUrl}}/login",
+							"raw": "localhost:8080/login",
 							"host": [
-								"{{baseUrl}}"
+								"localhost"
 							],
+							"port": "8080",
 							"path": [
 								"login"
 							]
@@ -299,7 +300,7 @@
 								],
 								"body": {
 									"mode": "raw",
-									"raw": "{\n  \"first_name\": \"Al\",\n  \"second_name\": \"Capone\",\n  \"birthdate\": \"1899-01-17\",\n  \"gender\": 1,\n  \"biography\": \"Gangster, bootlegger, racketeer\",\n  \"city\": \"Chicago\",\n  \"password\": \"12345678\"\n}",
+									"raw": "{\n  \"first_name\": \"Al-5\",\n  \"second_name\": \"Capone-5\",\n  \"birthdate\": \"1899-01-17\",\n  \"gender\": 1,\n  \"biography\": \"Gangster, bootlegger, racketeer\",\n  \"city\": \"Chicago\",\n  \"password\": \"12345678\"\n}",
 									"options": {
 										"raw": {
 											"headerFamily": "json",
@@ -308,7 +309,8 @@
 									}
 								},
 								"url": {
-									"raw": "localhost:8080/user/register",
+									"raw": "http://localhost:8080/user/register",
+									"protocol": "http",
 									"host": [
 										"localhost"
 									],
@@ -534,7 +536,8 @@
 									}
 								],
 								"url": {
-									"raw": "localhost:8080/user/search?first_name=Ков&last_name=Анас",
+									"raw": "http://localhost:8080/user/search?first_name=C&last_name=A",
+									"protocol": "http",
 									"host": [
 										"localhost"
 									],
@@ -546,13 +549,12 @@
 									"query": [
 										{
 											"key": "first_name",
-											"value": "Ков",
+											"value": "C",
 											"description": "(Required) Условие поиска по имени"
 										},
 										{
 											"key": "last_name",
-											"value": "Анас",
-											"description": "(Required) Условие поиска по фамилии"
+											"value": "A"
 										}
 									]
 								},
@@ -766,7 +768,7 @@
 											}
 										],
 										"url": {
-											"raw": "localhost:8080/user/get/63abbd48-ff4e-40ce-b0c7-85356828dd7f",
+											"raw": "localhost:8080/user/get/8b031daa-26db-4813-b858-02129f56cec2",
 											"host": [
 												"localhost"
 											],
@@ -774,7 +776,7 @@
 											"path": [
 												"user",
 												"get",
-												"63abbd48-ff4e-40ce-b0c7-85356828dd7f"
+												"8b031daa-26db-4813-b858-02129f56cec2"
 											]
 										},
 										"description": "Получение анкеты пользователя"
@@ -947,6 +949,527 @@
 													"variable": [
 														{
 															"key": "id"
+														}
+													]
+												}
+											},
+											"status": "Service Unavailable",
+											"code": 503,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												},
+												{
+													"key": "Retry-After",
+													"value": "<integer>",
+													"description": {
+														"content": "Время, через которое еще раз нужно сделать запрос",
+														"type": "text/plain"
+													}
+												}
+											],
+											"cookie": [],
+											"body": "{\n  \"message\": \"<string>\",\n  \"request_id\": \"<string>\",\n  \"code\": \"<integer>\"\n}"
+										}
+									]
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "friend",
+			"item": [
+				{
+					"name": "set",
+					"item": [
+						{
+							"name": "{user_id}",
+							"item": [
+								{
+									"name": "/friend/set/:user_id",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "efbbf00d-9cfc-4f36-8e55-f46357151735",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "localhost:8080/friend/set/e42574d7-56f2-4223-b072-8fef25fc8f6d",
+											"host": [
+												"localhost"
+											],
+											"port": "8080",
+											"path": [
+												"friend",
+												"set",
+												"e42574d7-56f2-4223-b072-8fef25fc8f6d"
+											]
+										}
+									},
+									"response": [
+										{
+											"name": "Пользователь успешно указал своего друга",
+											"originalRequest": {
+												"method": "PUT",
+												"header": [
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/friend/set/:user_id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"friend",
+														"set",
+														":user_id"
+													],
+													"variable": [
+														{
+															"key": "user_id"
+														}
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "text",
+											"header": [],
+											"cookie": [],
+											"body": ""
+										},
+										{
+											"name": "Невалидные данные ввода",
+											"originalRequest": {
+												"method": "PUT",
+												"header": [
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/friend/set/:user_id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"friend",
+														"set",
+														":user_id"
+													],
+													"variable": [
+														{
+															"key": "user_id"
+														}
+													]
+												}
+											},
+											"status": "Bad Request",
+											"code": 400,
+											"_postman_previewlanguage": "text",
+											"header": [],
+											"cookie": [],
+											"body": ""
+										},
+										{
+											"name": "Неавторизованный доступ",
+											"originalRequest": {
+												"method": "PUT",
+												"header": [
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/friend/set/:user_id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"friend",
+														"set",
+														":user_id"
+													],
+													"variable": [
+														{
+															"key": "user_id"
+														}
+													]
+												}
+											},
+											"status": "Unauthorized",
+											"code": 401,
+											"_postman_previewlanguage": "text",
+											"header": [],
+											"cookie": [],
+											"body": ""
+										},
+										{
+											"name": "Ошибка сервера",
+											"originalRequest": {
+												"method": "PUT",
+												"header": [
+													{
+														"key": "Accept",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/friend/set/:user_id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"friend",
+														"set",
+														":user_id"
+													],
+													"variable": [
+														{
+															"key": "user_id"
+														}
+													]
+												}
+											},
+											"status": "Internal Server Error",
+											"code": 500,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												},
+												{
+													"key": "Retry-After",
+													"value": "<integer>",
+													"description": {
+														"content": "Время, через которое еще раз нужно сделать запрос",
+														"type": "text/plain"
+													}
+												}
+											],
+											"cookie": [],
+											"body": "{\n  \"message\": \"<string>\",\n  \"request_id\": \"<string>\",\n  \"code\": \"<integer>\"\n}"
+										},
+										{
+											"name": "Ошибка сервера",
+											"originalRequest": {
+												"method": "PUT",
+												"header": [
+													{
+														"key": "Accept",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/friend/set/:user_id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"friend",
+														"set",
+														":user_id"
+													],
+													"variable": [
+														{
+															"key": "user_id"
+														}
+													]
+												}
+											},
+											"status": "Service Unavailable",
+											"code": 503,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												},
+												{
+													"key": "Retry-After",
+													"value": "<integer>",
+													"description": {
+														"content": "Время, через которое еще раз нужно сделать запрос",
+														"type": "text/plain"
+													}
+												}
+											],
+											"cookie": [],
+											"body": "{\n  \"message\": \"<string>\",\n  \"request_id\": \"<string>\",\n  \"code\": \"<integer>\"\n}"
+										}
+									]
+								}
+							]
+						}
+					]
+				},
+				{
+					"name": "delete",
+					"item": [
+						{
+							"name": "{user_id}",
+							"item": [
+								{
+									"name": "/friend/delete/:user_id",
+									"request": {
+										"auth": {
+											"type": "bearer",
+											"bearer": [
+												{
+													"key": "token",
+													"value": "{{bearerToken}}",
+													"type": "string"
+												}
+											]
+										},
+										"method": "PUT",
+										"header": [
+											{
+												"key": "Accept",
+												"value": "application/json"
+											}
+										],
+										"url": {
+											"raw": "{{baseUrl}}/friend/delete/:user_id",
+											"host": [
+												"{{baseUrl}}"
+											],
+											"path": [
+												"friend",
+												"delete",
+												":user_id"
+											],
+											"variable": [
+												{
+													"key": "user_id",
+													"value": "<string>",
+													"description": "(Required) "
+												}
+											]
+										}
+									},
+									"response": [
+										{
+											"name": "Пользователь успешно удалил из друзей пользователя",
+											"originalRequest": {
+												"method": "PUT",
+												"header": [
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/friend/delete/:user_id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"friend",
+														"delete",
+														":user_id"
+													],
+													"variable": [
+														{
+															"key": "user_id"
+														}
+													]
+												}
+											},
+											"status": "OK",
+											"code": 200,
+											"_postman_previewlanguage": "text",
+											"header": [],
+											"cookie": [],
+											"body": ""
+										},
+										{
+											"name": "Невалидные данные ввода",
+											"originalRequest": {
+												"method": "PUT",
+												"header": [
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/friend/delete/:user_id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"friend",
+														"delete",
+														":user_id"
+													],
+													"variable": [
+														{
+															"key": "user_id"
+														}
+													]
+												}
+											},
+											"status": "Bad Request",
+											"code": 400,
+											"_postman_previewlanguage": "text",
+											"header": [],
+											"cookie": [],
+											"body": ""
+										},
+										{
+											"name": "Неавторизованный доступ",
+											"originalRequest": {
+												"method": "PUT",
+												"header": [
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/friend/delete/:user_id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"friend",
+														"delete",
+														":user_id"
+													],
+													"variable": [
+														{
+															"key": "user_id"
+														}
+													]
+												}
+											},
+											"status": "Unauthorized",
+											"code": 401,
+											"_postman_previewlanguage": "text",
+											"header": [],
+											"cookie": [],
+											"body": ""
+										},
+										{
+											"name": "Ошибка сервера",
+											"originalRequest": {
+												"method": "PUT",
+												"header": [
+													{
+														"key": "Accept",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/friend/delete/:user_id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"friend",
+														"delete",
+														":user_id"
+													],
+													"variable": [
+														{
+															"key": "user_id"
+														}
+													]
+												}
+											},
+											"status": "Internal Server Error",
+											"code": 500,
+											"_postman_previewlanguage": "json",
+											"header": [
+												{
+													"key": "Content-Type",
+													"value": "application/json"
+												},
+												{
+													"key": "Retry-After",
+													"value": "<integer>",
+													"description": {
+														"content": "Время, через которое еще раз нужно сделать запрос",
+														"type": "text/plain"
+													}
+												}
+											],
+											"cookie": [],
+											"body": "{\n  \"message\": \"<string>\",\n  \"request_id\": \"<string>\",\n  \"code\": \"<integer>\"\n}"
+										},
+										{
+											"name": "Ошибка сервера",
+											"originalRequest": {
+												"method": "PUT",
+												"header": [
+													{
+														"key": "Accept",
+														"value": "application/json"
+													},
+													{
+														"key": "Authorization",
+														"value": "Bearer <token>",
+														"description": "Added as a part of security scheme: bearer"
+													}
+												],
+												"url": {
+													"raw": "{{baseUrl}}/friend/delete/:user_id",
+													"host": [
+														"{{baseUrl}}"
+													],
+													"path": [
+														"friend",
+														"delete",
+														":user_id"
+													],
+													"variable": [
+														{
+															"key": "user_id"
 														}
 													]
 												}
