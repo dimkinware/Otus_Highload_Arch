@@ -8,8 +8,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/go-redis/redis"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/gorilla/mux"
@@ -17,23 +19,32 @@ import (
 )
 
 type Server struct {
-	userService        service.UserService
-	registerService    service.RegisterService
-	loginService       service.LoginService
-	searchService      service.SearchService
-	friendLinksService service.FriendLinksService
+	userService         service.UserService
+	registerService     service.RegisterService
+	loginService        service.LoginService
+	searchService       service.SearchService
+	friendLinksService  service.FriendLinksService
+	postService         service.PostService
+	feedService         service.FeedService
+	FeedCacheController service.FeedCacheController
 }
 
-func NewServer(db *sqlx.DB) *Server {
+func NewServer(db *sqlx.DB, redisDb *redis.Client) *Server {
 	userStore := storage.NewDbUserStore(db)
 	tokenStore := storage.NewDbTokenStore(db)
 	friendLinksStore := storage.NewDbFriendLinksStore(db)
+	postsStore := storage.NewDbPostsStore(db)
+	postsCacheStore := storage.NewRedisPostsCacheStore(redisDb)
+	feedCacheController := service.NewRedisCacheController(redisDb, postsStore, postsCacheStore, friendLinksStore)
 	return &Server{
-		userService:        *service.NewUserService(userStore),
-		registerService:    *service.NewRegisterService(userStore),
-		loginService:       *service.NewLoginService(userStore, tokenStore),
-		searchService:      *service.NewSearchService(userStore),
-		friendLinksService: *service.NewFriendLinksService(friendLinksStore),
+		userService:         *service.NewUserService(userStore),
+		registerService:     *service.NewRegisterService(userStore),
+		loginService:        *service.NewLoginService(userStore, tokenStore, feedCacheController),
+		searchService:       *service.NewSearchService(userStore),
+		friendLinksService:  *service.NewFriendLinksService(friendLinksStore),
+		postService:         *service.NewPostService(postsStore, feedCacheController),
+		feedService:         *service.NewFeedService(postsStore, postsCacheStore, friendLinksStore),
+		FeedCacheController: feedCacheController,
 	}
 }
 
@@ -135,6 +146,7 @@ func (s *Server) GetSearchHandler(w http.ResponseWriter, req *http.Request) {
 				w.WriteHeader(http.StatusInternalServerError)
 			}
 		} else {
+			w.WriteHeader(http.StatusOK)
 			renderJSON(w, res)
 		}
 	}
@@ -183,6 +195,93 @@ func (s *Server) GetFriendDeleteHandler(w http.ResponseWriter, req *http.Request
 		}
 	} else {
 		w.WriteHeader(http.StatusOK)
+	}
+}
+
+func (s *Server) GetPostGetHandler(w http.ResponseWriter, req *http.Request) {
+	//check auth
+	_, err := getUserIdFromContext(req.Context())
+	if err != nil {
+		http.Error(w, "", http.StatusUnauthorized)
+		return
+	}
+
+	postId := mux.Vars(req)["id"]
+	res, err := s.postService.GetPost(postId)
+	if err != nil {
+		log.Println(err)
+		if errors.Is(err, service.ErrorNotFound) {
+			w.WriteHeader(http.StatusNotFound)
+		} else if errors.Is(err, service.ErrorStoreError) {
+			w.WriteHeader(http.StatusInternalServerError)
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+	} else {
+		w.WriteHeader(http.StatusOK)
+		renderJSON(w, res)
+	}
+}
+
+func (s *Server) GetPostCreateHandler(w http.ResponseWriter, req *http.Request) {
+	//check auth
+	currentUserId, err := getUserIdFromContext(req.Context())
+	if err != nil {
+		http.Error(w, "", http.StatusUnauthorized)
+		return
+	}
+
+	var postCreateModel api.PostCreateApiModel
+	err = parseJSON(req, &postCreateModel)
+	if err != nil {
+		// validation error
+		println(err.Error())
+		w.WriteHeader(http.StatusBadRequest)
+	} else {
+		var res, err = s.postService.CreatePost(postCreateModel.Text, currentUserId)
+		if err != nil {
+			log.Println(err)
+			if errors.Is(err, service.ErrorValidation) {
+				w.WriteHeader(http.StatusBadRequest)
+			} else if errors.Is(err, service.ErrorStoreError) {
+				w.WriteHeader(http.StatusInternalServerError)
+			} else {
+				w.WriteHeader(http.StatusInternalServerError)
+			}
+		} else {
+			w.WriteHeader(http.StatusOK)
+			renderJSON(w, res)
+		}
+	}
+}
+
+func (s *Server) GetPostFeedHandler(w http.ResponseWriter, req *http.Request) {
+	//check auth
+	currentUserId, err := getUserIdFromContext(req.Context())
+	if err != nil {
+		http.Error(w, "", http.StatusUnauthorized)
+		return
+	}
+	offset, errOffset := strconv.Atoi(req.URL.Query().Get("offset"))
+	limit, errLimit := strconv.Atoi(req.URL.Query().Get("limit"))
+	if errOffset != nil || errLimit != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	res, err := s.feedService.GetFeed(currentUserId, offset, limit)
+	if err != nil {
+		log.Println(err)
+		if errors.Is(err, service.ErrorNotFound) {
+			w.WriteHeader(http.StatusNotFound)
+		} else if errors.Is(err, service.ErrorStoreError) {
+			w.WriteHeader(http.StatusInternalServerError)
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+	} else {
+		w.WriteHeader(http.StatusOK)
+		renderJSON(w, res)
 	}
 }
 

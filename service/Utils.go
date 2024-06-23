@@ -1,6 +1,8 @@
 package service
 
-import "log"
+import (
+	"log"
+)
 import "golang.org/x/crypto/bcrypt"
 import "time"
 
@@ -54,3 +56,4 @@ func formatUnixTimestampToString(unixTimestamp int64, layout string) string {
 
 // strconv.FormatUint(uint64(user.Id), 10) - convert uint64 to string
 // strconv.Itoa(id) - convert int to string
+// strconv.Atoi(id) - convert string to int

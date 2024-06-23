@@ -4,20 +4,21 @@ import (
 	"HighArch/api"
 	"HighArch/entity"
 	"HighArch/storage"
-	"time"
-
 	"github.com/google/uuid"
+	"time"
 )
 
 type LoginService struct {
-	userStore  storage.UserStore
-	tokenStore storage.TokenStore
+	userStore           storage.UserStore
+	tokenStore          storage.TokenStore
+	feedCacheController FeedCacheController
 }
 
-func NewLoginService(userStore storage.UserStore, tokenStore storage.TokenStore) *LoginService {
+func NewLoginService(userStore storage.UserStore, tokenStore storage.TokenStore, feedCacheController FeedCacheController) *LoginService {
 	return &LoginService{
-		userStore:  userStore,
-		tokenStore: tokenStore,
+		userStore:           userStore,
+		tokenStore:          tokenStore,
+		feedCacheController: feedCacheController,
 	}
 }
 
@@ -43,6 +44,9 @@ func (s *LoginService) Login(loginData api.LoginApiModel) (*api.LoginSuccessApiM
 		if err != nil {
 			return nil, ErrorStoreError
 		}
+
+		s.feedCacheController.InvalidateFeedCacheForUser(loginData.UserId)
+
 		return &api.LoginSuccessApiModel{Token: newTokenInfo.Token}, nil
 	}
 }
@@ -68,4 +72,4 @@ func checkTokenInfoIsValid(tokenInfo entity.TokenInfo) bool {
 	return true
 }
 
-const ThirtyDaysMs = 30*24*60*60 + 1000
+const ThirtyDaysMs = 30 * 24 * 60 * 60 * 1000

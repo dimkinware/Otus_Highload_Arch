@@ -12,6 +12,16 @@ services:
       - higharchdb-data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+
+  cache-redis:
+    image: redis:7.2.5-alpine
+    restart: always
+    ports:
+      - '6379:6379'
+    command: redis-server --save 20 1 --loglevel warning --requirepass higharchredispwd
+    volumes:
+      - higharchdb-cache:/data
+
   app:
     build:
       dockerfile: Dockerfile
@@ -22,6 +32,9 @@ services:
       POSTGRES_PASSWORD: "higharchpgpwd"
       POSTGRES_HOST: "postgres"
       POSTGRES_PORT: "5432"
+      REDIS_HOST: "cache-redis"
+      REDIS_PORT: "6379"
+      REDIS_PASSWORD: "higharchredispwd"
       APP_PORT: "8080"
     volumes:
       - .:/app
@@ -29,6 +42,8 @@ services:
       - "8080:8080"
     depends_on:
       - postgres
+      - cache-redis
 
 volumes:
   higharchdb-data:
+  higharchdb-cache:

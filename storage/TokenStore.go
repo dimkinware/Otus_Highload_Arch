@@ -33,7 +33,7 @@ func (d dbTokenStore) CreateNewToken(tokenInfo entity.TokenInfo) error {
 }
 
 func (d dbTokenStore) FindToken(token string) (*entity.TokenInfo, error) {
-	rows, err := d.db.Queryx("SELECT * FROM tokens WHERE token = $1 LIMIT 1 ORDER BY expired_time DESC", token)
+	rows, err := d.db.Queryx("SELECT * FROM tokens WHERE token = $1 ORDER BY expired_time DESC LIMIT 1", token)
 	if err != nil {
 		log.Println(err)
 		return nil, err

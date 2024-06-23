@@ -36,6 +36,8 @@ CREATE TABLE posts(
     id UUID not null,
     author_user_id UUID, 
     post_text TEXT,
+    create_time bigint,
     PRIMARY KEY (id),
-    FOREIGN KEY (author_user_id) REFERENCES users(id),
+    FOREIGN KEY (author_user_id) REFERENCES users(id)
 );
+
