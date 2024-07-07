@@ -10,12 +10,14 @@ import (
 type PostService struct {
 	postStore           storage.PostsStore
 	feedCacheController FeedCacheController
+	feedWsController    FeedWsController
 }
 
-func NewPostService(postStore storage.PostsStore, feedCacheController FeedCacheController) *PostService {
+func NewPostService(postStore storage.PostsStore, feedCacheController FeedCacheController, feedWsController FeedWsController) *PostService {
 	return &PostService{
 		postStore:           postStore,
 		feedCacheController: feedCacheController,
+		feedWsController:    feedWsController,
 	}
 }
 
@@ -34,7 +36,8 @@ func (s *PostService) CreatePost(postText string, authorId string) (*api.PostCre
 		return nil, ErrorStoreError
 	}
 
-	s.feedCacheController.InvalidateFeedsCacheForFriends(authorId)
+	go s.feedCacheController.InvalidateFeedsCacheForFriends(authorId)
+	go s.feedWsController.HandleNewPostCreated(authorId, newPost)
 
 	return &api.PostCreateSuccessApiModel{PostId: *id}, nil
 }

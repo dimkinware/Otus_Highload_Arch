@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	amqp "github.com/rabbitmq/amqp091-go"
 	"log"
 	"net/http"
 	"os"
@@ -21,41 +22,48 @@ func main() {
 	redisHost := os.Getenv("REDIS_HOST")
 	redisPort := os.Getenv("REDIS_PORT")
 	redisPassword := os.Getenv("REDIS_PASSWORD")
+	rabbitUser := os.Getenv("RABBITMQ_USER")
+	rabbitPassword := os.Getenv("RABBITMQ_PASS")
+	rabbitHost := os.Getenv("RABBITMQ_HOST")
+	rabbitPort := os.Getenv("RABBITMQ_PORT")
 
-	// connect to postgres
+	// connect to Postgres
 	psqlconn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbname)
+	log.Println(psqlconn)
 	db, err := sqlx.Open("postgres", psqlconn)
-	if err != nil {
-		log.Fatal(err)
-	}
-	println("Ping PostgresSql")
+	failOnError(err, "Error connecting to PostgresSql database")
+	log.Println("Ping PostgresSql")
 	err = db.Ping()
-	if err != nil {
-		log.Fatal(err)
-	}
+	failOnError(err, "Error pinging PostgresSql")
 
-	// connect to redis
+	// connect to Redis
 	redisClient := redis.NewClient(&redis.Options{
 		Addr:     redisHost + ":" + redisPort,
 		Password: redisPassword,
 		DB:       0, // use default DB
 	})
-	println("Ping Redis")
+	log.Println("Ping Redis")
 	err = redisClient.Ping().Err()
-	if err != nil {
-		log.Fatal(err)
-	}
+	failOnError(err, "Error pinging Redis")
 
-	// starting Server
-	server := NewServer(db, redisClient)
+	// connect to RabbitMQ
+	rabbitConn, err := amqp.Dial(fmt.Sprintf("amqp://%s:%s@%s:%s/", rabbitUser, rabbitPassword, rabbitHost, rabbitPort))
+	failOnError(err, "Failed to connect to RabbitMQ")
+	defer rabbitConn.Close()
+	log.Println("Create RabbitMQ channel")
+	rabbitChannel, err := rabbitConn.Channel()
+	failOnError(err, "Failed to open a channel to RabbitMQ")
+	defer rabbitChannel.Close()
+
+	// create Server
+	server := NewServer(db, redisClient, rabbitChannel)
 	router := mux.NewRouter()
 	router.HandleFunc("/user/register", server.GetRegisterHandler).Methods("POST")
 	router.HandleFunc("/login", server.GetLoginHandler).Methods("POST")
 
-	//defining authenticated route
+	// define authenticated route
 	privateRouter := router.PathPrefix("/").Subrouter()
 	privateRouter.Use(server.GetAuthMiddleware)
-
 	privateRouter.HandleFunc("/user/get/{id}", server.GetUserHandler).Methods("GET")
 	privateRouter.HandleFunc("/user/search", server.GetSearchHandler).Methods("GET")
 	privateRouter.HandleFunc("/friend/set/{id}", server.GetFriendSetHandler).Methods("PUT")
@@ -63,10 +71,18 @@ func main() {
 	privateRouter.HandleFunc("/post/get/{id}", server.GetPostGetHandler).Methods("GET")
 	privateRouter.HandleFunc("/post/create", server.GetPostCreateHandler).Methods("POST")
 	privateRouter.HandleFunc("/post/feed", server.GetPostFeedHandler).Methods("GET")
+	privateRouter.HandleFunc("/post/feed/posted", server.GetPostFeedWsHandler)
 
 	// start listening cache queue
 	go server.FeedCacheController.ListenHandleFeedUpdate()
 
-	println("Start listening server on port " + appPort)
+	// start server
+	log.Println("Start listening server on port " + appPort)
 	http.ListenAndServe("0.0.0.0:"+appPort, router)
+}
+
+func failOnError(err error, msg string) {
+	if err != nil {
+		log.Panicf("%s: %s", msg, err)
+	}
 }

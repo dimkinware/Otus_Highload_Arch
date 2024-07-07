@@ -9,6 +9,8 @@ import (
 	"errors"
 	"fmt"
 	"github.com/go-redis/redis"
+	"github.com/gorilla/websocket"
+	amqp "github.com/rabbitmq/amqp091-go"
 	"log"
 	"net/http"
 	"strconv"
@@ -26,25 +28,28 @@ type Server struct {
 	friendLinksService  service.FriendLinksService
 	postService         service.PostService
 	feedService         service.FeedService
+	feedWsController    service.FeedWsController
 	FeedCacheController service.FeedCacheController
 }
 
-func NewServer(db *sqlx.DB, redisDb *redis.Client) *Server {
+func NewServer(db *sqlx.DB, redisDb *redis.Client, rabbitChan *amqp.Channel) *Server {
 	userStore := storage.NewDbUserStore(db)
 	tokenStore := storage.NewDbTokenStore(db)
 	friendLinksStore := storage.NewDbFriendLinksStore(db)
 	postsStore := storage.NewDbPostsStore(db)
 	postsCacheStore := storage.NewRedisPostsCacheStore(redisDb)
 	feedCacheController := service.NewRedisCacheController(redisDb, postsStore, postsCacheStore, friendLinksStore)
+	feedWsController := service.NewFeedWsController(rabbitChan, friendLinksStore)
 	return &Server{
 		userService:         *service.NewUserService(userStore),
 		registerService:     *service.NewRegisterService(userStore),
 		loginService:        *service.NewLoginService(userStore, tokenStore, feedCacheController),
 		searchService:       *service.NewSearchService(userStore),
 		friendLinksService:  *service.NewFriendLinksService(friendLinksStore),
-		postService:         *service.NewPostService(postsStore, feedCacheController),
+		postService:         *service.NewPostService(postsStore, feedCacheController, feedWsController),
 		feedService:         *service.NewFeedService(postsStore, postsCacheStore, friendLinksStore),
 		FeedCacheController: feedCacheController,
+		feedWsController:    feedWsController,
 	}
 }
 
@@ -67,7 +72,6 @@ func (s *Server) GetRegisterHandler(w http.ResponseWriter, req *http.Request) {
 				w.WriteHeader(http.StatusInternalServerError)
 			}
 		} else {
-			w.WriteHeader(http.StatusOK)
 			renderJSON(w, res)
 		}
 	}
@@ -92,7 +96,6 @@ func (s *Server) GetUserHandler(w http.ResponseWriter, req *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 	} else {
-		w.WriteHeader(http.StatusOK)
 		renderJSON(w, res)
 	}
 }
@@ -116,7 +119,6 @@ func (s *Server) GetLoginHandler(w http.ResponseWriter, req *http.Request) {
 				w.WriteHeader(http.StatusInternalServerError)
 			}
 		} else {
-			w.WriteHeader(http.StatusOK)
 			renderJSON(w, res)
 		}
 	}
@@ -146,7 +148,6 @@ func (s *Server) GetSearchHandler(w http.ResponseWriter, req *http.Request) {
 				w.WriteHeader(http.StatusInternalServerError)
 			}
 		} else {
-			w.WriteHeader(http.StatusOK)
 			renderJSON(w, res)
 		}
 	}
@@ -218,7 +219,6 @@ func (s *Server) GetPostGetHandler(w http.ResponseWriter, req *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 	} else {
-		w.WriteHeader(http.StatusOK)
 		renderJSON(w, res)
 	}
 }
@@ -249,7 +249,6 @@ func (s *Server) GetPostCreateHandler(w http.ResponseWriter, req *http.Request) 
 				w.WriteHeader(http.StatusInternalServerError)
 			}
 		} else {
-			w.WriteHeader(http.StatusOK)
 			renderJSON(w, res)
 		}
 	}
@@ -280,12 +279,30 @@ func (s *Server) GetPostFeedHandler(w http.ResponseWriter, req *http.Request) {
 			w.WriteHeader(http.StatusInternalServerError)
 		}
 	} else {
-		w.WriteHeader(http.StatusOK)
 		renderJSON(w, res)
 	}
 }
 
+func (s *Server) GetPostFeedWsHandler(w http.ResponseWriter, req *http.Request) {
+	currentUserId, err := getUserIdFromContext(req.Context())
+	if err != nil {
+		http.Error(w, "", http.StatusUnauthorized)
+		return
+	}
+	wsUpgrader.CheckOrigin = func(r *http.Request) bool { return true }
+	ws, err := wsUpgrader.Upgrade(w, req, nil)
+	if err != nil {
+		log.Println(err)
+	} else {
+		s.feedWsController.AddConnection(currentUserId, ws)
+		// for debugging
+		//ws.WriteMessage(websocket.TextMessage, []byte("Welcome to the webserver "+currentUserId))
+	}
+}
+
 // Auth middleware methods
+
+const userIdKey string = "user_id"
 
 func (s *Server) GetAuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -329,4 +346,7 @@ func parseJSON(r *http.Request, v interface{}) error {
 	return json.NewDecoder(r.Body).Decode(v)
 }
 
-const userIdKey string = "user_id"
+var wsUpgrader = websocket.Upgrader{
+	ReadBufferSize:  1024,
+	WriteBufferSize: 1024,
+}
