@@ -73,6 +73,10 @@ func main() {
 	privateRouter.HandleFunc("/post/feed", server.GetPostFeedHandler).Methods("GET")
 	privateRouter.HandleFunc("/post/feed/posted", server.GetPostFeedWsHandler)
 
+	internalRouter := router.PathPrefix("/internal").Subrouter()
+	internalRouter.Use(server.GetInternalAuthMiddleware)
+	internalRouter.HandleFunc("/checkAuth/{token}", server.GetCheckAuthHandler).Methods("GET")
+
 	// start listening cache queue
 	go server.FeedCacheController.ListenHandleFeedUpdate()
 

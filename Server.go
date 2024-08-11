@@ -2,6 +2,7 @@ package main
 
 import (
 	"HighArch/api"
+	"HighArch/api/private"
 	"HighArch/service"
 	"HighArch/storage"
 	"context"
@@ -300,6 +301,33 @@ func (s *Server) GetPostFeedWsHandler(w http.ResponseWriter, req *http.Request) 
 	}
 }
 
+// Private internal Api handlers
+
+const internalApiAuthToken = "X3sF9iQvQb9Q2JLHjd55ovISTk7gWLzp"
+
+func (s *Server) GetInternalAuthMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		tokenString := r.Header.Get("Authorization")
+		if tokenString != internalApiAuthToken {
+			w.WriteHeader(http.StatusUnauthorized)
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}
+
+func (s *Server) GetCheckAuthHandler(w http.ResponseWriter, req *http.Request) {
+	logRequest(req)
+	token := mux.Vars(req)["token"]
+	userId, err := s.loginService.Authenticate(token)
+	if err != nil || userId == nil {
+		w.WriteHeader(http.StatusNotFound)
+	} else {
+		var apiModel = private.CheckAuthSuccessApiModel{UserId: *userId}
+		renderJSON(w, apiModel)
+	}
+}
+
 // Auth middleware methods
 
 const userIdKey string = "user_id"
@@ -344,6 +372,13 @@ func renderJSON(w http.ResponseWriter, v interface{}) {
 
 func parseJSON(r *http.Request, v interface{}) error {
 	return json.NewDecoder(r.Body).Decode(v)
+}
+
+func logRequest(req *http.Request) {
+	log.Printf("Received request: %s %s", req.Method, req.URL.Path)
+	for k, v := range req.Header {
+		log.Printf("Header: %s = %s", k, v)
+	}
 }
 
 var wsUpgrader = websocket.Upgrader{
